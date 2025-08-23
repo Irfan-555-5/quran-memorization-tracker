@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Qur'an Memorization Tracker</title>
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background: linear-gradient(to right, #e0f7fa, #fff3e0);
+}
+
+
+.surah {
+  display: inline-flex; /* Makes the box wrap tightly around the content */
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(255, 255, 255, 0.8); /* Light background with slight transparency */
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); /* Slightly deeper shadow for elegance */
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  color: #333;
+  white-space: nowrap; /* Prevents text from wrapping */
+  transition: all 0.3s ease; /* Smooth hover transition */
+  cursor: default;
+}
+
+.surah:hover {
+  background-color: rgba(240, 248, 255, 0.95); /* Soft blue tint on hover */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+  transform: translateY(-2px); /* Slight lift effect */
+}
+input[type="checkbox"]:checked {
+  accent-color: #0077cc;
+  transition: transform 0.2s ease;
+}
+
+#surahList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+
+
+.surah a {
+  color: #0077cc;
+  font-weight: bold;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.2); /* Slightly larger checkbox */
+}
+    progress {
+      width: 100%;
+      height: 20px;
+    }
+    input[type="search"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    select {
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+    a {
+      text-decoration: none;
+      color: #0077cc;
+    }
+  </style>
+</head>
+<body>
+  <h2>Qur'an Memorization Tracker</h2>
+  <p>Select the Surahs you've memorized:</p>
+
+
+  <input type="search" id="searchInput" placeholder="Search Surah by name...">
+  <select id="sortSelect">
+    <option value="default">Sort by default order</option>
+    <option value="revelation">Sort by revelation order</option>
+    <option value="asc">Sort by ayah count (ascending)</option>
+    <option value="desc">Sort by ayah count (descending)</option>
+  </select>
+
+<button id="themeToggle">🌙Dark/ 🔆Light Mode</button>
+
+<script>
+  document.getElementById("themeToggle").addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+
+    const isDark = document.body.classList.contains("dark");
+
+    // Apply dark theme styles
+    if (isDark) {
+      document.body.style.background = "#121212";
+      document.body.style.color = "#f0f0f0";
+
+      document.querySelectorAll(".surah").forEach(el => {
+        el.style.backgroundColor = "rgba(40, 40, 40, 0.8)";
+        el.style.boxShadow = "0 2px 6px rgba(255, 255, 255, 0.1)";
+        el.style.color = "#f0f0f0";
+      });
+    } else {
+      document.body.style.background = "linear-gradient(to right, #e0f7fa, #fff3e0)";
+      document.body.style.color = "#333";
+
+      document.querySelectorAll(".surah").forEach(el => {
+        el.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+        el.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.15)";
+        el.style.color = "#333";
+      });
+    }
+  });
+</script>
+
+
+  <div id="surahList"></div>
+
+  <h3>Progress:</h3>
+  <p id="surahProgress">Surahs: 0 / 114 (0%)</p>
+  <p id="ayahProgress">Ayahs: 0 / 6236 (0%)</p>
+  <progress id="progressBar" value="0" max="100"></progress>
+
+  <script>
+    const TOTAL_SURAHS = 114;
+    const TOTAL_AYAHS = 6236;
+
+const surahs = [
+  { name: "Al-Fatiha", ayahs: 7, revelation: 5 },
+  { name: "Al-Baqarah", ayahs: 286, revelation: 87 },
+  { name: "Aal-Imran", ayahs: 200, revelation: 89 },
+  { name: "An-Nisa", ayahs: 176, revelation: 92 },
+  { name: "Al-Ma'idah", ayahs: 120, revelation: 112 },
+  { name: "Al-An'am", ayahs: 165, revelation: 55 },
+  { name: "Al-A'raf", ayahs: 206, revelation: 39 },
+  { name: "Al-Anfal", ayahs: 75, revelation: 88 },
+  { name: "At-Tawbah", ayahs: 129, revelation: 113 },
+  { name: "Yunus", ayahs: 109, revelation: 51 },
+  { name: "Hud", ayahs: 123, revelation: 52 },
+  { name: "Yusuf", ayahs: 111, revelation: 53 },
+  { name: "Ar-Ra'd", ayahs: 43, revelation: 96 },
+  { name: "Ibrahim", ayahs: 52, revelation: 72 },
+  { name: "Al-Hijr", ayahs: 99, revelation: 54 },
+  { name: "An-Nahl", ayahs: 128, revelation: 70 },
+  { name: "Al-Isra", ayahs: 111, revelation: 50 },
+  { name: "Al-Kahf", ayahs: 110, revelation: 69 },
+  { name: "Maryam", ayahs: 98, revelation: 44 },
+  { name: "Ta-Ha", ayahs: 135, revelation: 45 },
+  { name: "Al-Anbiya", ayahs: 112, revelation: 73 },
+  { name: "Al-Hajj", ayahs: 78, revelation: 103 },
+  { name: "Al-Mu'minun", ayahs: 118, revelation: 74 },
+  { name: "An-Nur", ayahs: 64, revelation: 102 },
+  { name: "Al-Furqan", ayahs: 77, revelation: 42 },
+  { name: "Ash-Shu'ara", ayahs: 227, revelation: 47 },
+  { name: "An-Naml", ayahs: 93, revelation: 48 },
+  { name: "Al-Qasas", ayahs: 88, revelation: 49 },
+  { name: "Al-Ankabut", ayahs: 69, revelation: 85 },
+  { name: "Ar-Rum", ayahs: 60, revelation: 84 },
+  { name: "Luqman", ayahs: 34, revelation: 57 },
+  { name: "As-Sajda", ayahs: 30, revelation: 75 },
+  { name: "Al-Ahzab", ayahs: 73, revelation: 90 },
+  { name: "Saba", ayahs: 54, revelation: 58 },
+  { name: "Fatir", ayahs: 45, revelation: 43 },
+  { name: "Ya-Sin", ayahs: 83, revelation: 41 },
+  { name: "As-Saffat", ayahs: 182, revelation: 56 },
+  { name: "Sad", ayahs: 88, revelation: 38 },
+  { name: "Az-Zumar", ayahs: 75, revelation: 59 },
+  { name: "Ghafir", ayahs: 85, revelation: 60 },
+  { name: "Fussilat", ayahs: 54, revelation: 61 },
+  { name: "Ash-Shura", ayahs: 53, revelation: 62 },
+  { name: "Az-Zukhruf", ayahs: 89, revelation: 63 },
+  { name: "Ad-Dukhan", ayahs: 59, revelation: 64 },
+  { name: "Al-Jathiya", ayahs: 37, revelation: 65 },
+  { name: "Al-Ahqaf", ayahs: 35, revelation: 66 },
+  { name: "Muhammad", ayahs: 38, revelation: 95 },
+  { name: "Al-Fath", ayahs: 29, revelation: 111 },
+  { name: "Al-Hujurat", ayahs: 18, revelation: 106 },
+  { name: "Qaf", ayahs: 45, revelation: 34 },
+  { name: "Adh-Dhariyat", ayahs: 60, revelation: 67 },
+  { name: "At-Tur", ayahs: 49, revelation: 76 },
+  { name: "An-Najm", ayahs: 62, revelation: 23 },
+  { name: "Al-Qamar", ayahs: 55, revelation: 37 },
+  { name: "Ar-Rahman", ayahs: 78, revelation: 97 },
+  { name: "Al-Waqi'a", ayahs: 96, revelation: 46 },
+  { name: "Al-Hadid", ayahs: 29, revelation: 94 },
+  { name: "Al-Mujadila", ayahs: 22, revelation: 105 },
+  { name: "Al-Hashr", ayahs: 24, revelation: 101 },
+  { name: "Al-Mumtahina", ayahs: 13, revelation: 91 },
+  { name: "As-Saff", ayahs: 14, revelation: 109 },
+  { name: "Al-Jumu'a", ayahs: 11, revelation: 110 },
+  { name: "Al-Munafiqun", ayahs: 11, revelation: 104 },
+  { name: "At-Taghabun", ayahs: 18, revelation: 108 },
+  { name: "At-Talaq", ayahs: 12, revelation: 99 },
+  { name: "At-Tahrim", ayahs: 12, revelation: 107 },
+  { name: "Al-Mulk", ayahs: 30, revelation: 77 },
+  { name: "Al-Qalam", ayahs: 52, revelation: 2 },
+  { name: "Al-Haqqah", ayahs: 52, revelation: 78 },
+  { name: "Al-Ma'arij", ayahs: 44, revelation: 79 },
+  { name: "Nuh", ayahs: 28, revelation: 71 },
+  { name: "Al-Jinn", ayahs: 28, revelation: 40 },
+  { name: "Al-Muzzammil", ayahs: 20, revelation: 3 },
+  { name: "Al-Muddaththir", ayahs: 56, revelation: 4 },
+  { name: "Al-Qiyamah", ayahs: 40, revelation: 31 },
+  { name: "Al-Insan", ayahs: 31, revelation: 98 },
+  { name: "Al-Mursalat", ayahs: 50, revelation: 33 },
+  { name: "An-Naba", ayahs: 40, revelation: 80 },
+  { name: "An-Nazi'at", ayahs: 46, revelation: 81 },
+  { name: "Abasa", ayahs: 42, revelation: 24 },
+  { name: "At-Takwir", ayahs: 29, revelation: 7 },
+  { name: "Al-Infitar", ayahs: 19, revelation: 82 },
+  { name: "Al-Mutaffifin", ayahs: 36, revelation: 86 },
+  { name: "Al-Inshiqaq", ayahs: 25, revelation: 83 },
+  { name: "Al-Buruj", ayahs: 22, revelation: 27 },
+  { name: "At-Tariq", ayahs: 17, revelation: 36 },
+  { name: "Al-A'la", ayahs: 19, revelation: 8 },
+  { name: "Al-Ghashiyah", ayahs: 26, revelation: 68 },
+  { name: "Al-Fajr", ayahs: 30, revelation: 10 },
+  { name: "Al-Balad", ayahs: 20, revelation: 35 },
+  { name: "Ash-Shams", ayahs: 15, revelation: 26 },
+  { name: "Al-Lail", ayahs: 21, revelation: 9 },
+  { name: "Ad-Duhaa", ayahs: 11, revelation: 11 },
+  { name: "Ash-Sharh", ayahs: 8, revelation: 12 },
+    { name: "At-Tin", ayahs: 8, revelation: 28 },
+  { name: "Al-'Alaq", ayahs: 19, revelation: 1 },
+  { name: "Al-Qadr", ayahs: 5, revelation: 25 },
+  { name: "Al-Bayyina", ayahs: 8, revelation: 100 },
+  { name: "Az-Zalzalah", ayahs: 8, revelation: 93 },
+  { name: "Al-Adiyat", ayahs: 11, revelation: 14 },
+  { name: "Al-Qari'ah", ayahs: 11, revelation: 30 },
+  { name: "At-Takathur", ayahs: 8, revelation: 16 },
+  { name: "Al-Asr", ayahs: 3, revelation: 13 },
+  { name: "Al-Humazah", ayahs: 9, revelation: 32 },
+  { name: "Al-Fil", ayahs: 5, revelation: 19 },
+  { name: "Quraysh", ayahs: 4, revelation: 29 },
+  { name: "Al-Ma'un", ayahs: 7, revelation: 17 },
+  { name: "Al-Kawthar", ayahs: 3, revelation: 15 },
+  { name: "Al-Kafirun", ayahs: 6, revelation: 18 },
+  { name: "An-Nasr", ayahs: 3, revelation: 114 },
+  { name: "Al-Masad", ayahs: 5, revelation: 6 },
+  { name: "Al-Ikhlas", ayahs: 4, revelation: 22 },
+  { name: "Al-Falaq", ayahs: 5, revelation: 20 },
+  { name: "An-Nas", ayahs: 6, revelation: 21 }
+];
+
+    const surahList = document.getElementById("surahList");
+    const surahProgress = document.getElementById("surahProgress");
+    const ayahProgress = document.getElementById("ayahProgress");
+    const progressBar = document.getElementById("progressBar");
+    const searchInput = document.getElementById("searchInput");
+    const sortSelect = document.getElementById("sortSelect");
+
+   function renderSurahs(list) {
+  surahList.innerHTML = "";
+
+  // Load saved memorized Surahs from localStorage
+  const saved = JSON.parse(localStorage.getItem("memorizedSurahs")) || [];
+
+  list.forEach((surah, index) => {
+    const div = document.createElement("div");
+    div.className = "surah";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.setAttribute("data-ayahs", surah.ayahs);
+
+    // Restore checkbox state if previously saved
+    if (saved.includes(index)) {
+      checkbox.checked = true;
+    }
+
+    const link = document.createElement("a");
+    link.href = `https://quran.com/${index + 1}`; 
+    link.target = "_blank";
+    link.textContent = `${index + 1}. ${surah.name} (${surah.ayahs} ayahs)`;
+
+    div.appendChild(checkbox);
+    div.appendChild(link);
+    surahList.appendChild(div);
+
+    checkbox.addEventListener("change", updateProgress);
+  });
+
+  // Update progress bar on initial render
+  updateProgress();
+}
+
+function updateProgress() {
+  const checkboxes = document.querySelectorAll("input[type=checkbox]");
+  let surahsMem = 0, ayahsMem = 0;
+  const checkedSurahs = [];
+
+  checkboxes.forEach((cb, i) => {
+    if (cb.checked) {
+      surahsMem++;
+      ayahsMem += parseInt(cb.dataset.ayahs);
+      checkedSurahs.push(i);
+    }
+  });
+
+  const surahPercent = (surahsMem / TOTAL_SURAHS * 100).toFixed(2);
+  const ayahPercent = (ayahsMem / TOTAL_AYAHS * 100).toFixed(2);
+
+  surahProgress.textContent = `Surahs: ${surahsMem} / ${TOTAL_SURAHS} (${surahPercent}%)`;
+  ayahProgress.textContent = `Ayahs: ${ayahsMem} / ${TOTAL_AYAHS} (${ayahPercent}%)`;
+  progressBar.value = ayahPercent;
+
+  // Save checked Surahs to localStorage
+  localStorage.setItem("memorizedSurahs", JSON.stringify(checkedSurahs));
+}
+
+ function filterSurahs() {
+      const query = searchInput.value.toLowerCase();
+      const filtered = surahs.filter(s => s.name.toLowerCase().includes(query));
+      renderSurahs(filtered);
+    }
+
+    function sortSurahs() {
+      let sorted = [...surahs];
+      const sortType = sortSelect.value;
+
+      if (sortType === "revelation") {
+        sorted.sort((a, b) => a.revelation - b.revelation);
+      } else if (sortType === "asc") {
+        sorted.sort((a, b) => a.ayahs - b.ayahs);
+      } else if (sortType === "desc") {
+        sorted.sort((a, b) => b.ayahs - a.ayahs);
+      }
+
+      renderSurahs(sorted);
+    }
+
+    searchInput.addEventListener("input", filterSurahs);
+    sortSelect.addEventListener("change", sortSurahs);
+
+    renderSurahs(surahs);
+  </script>
+
+
+</body>
+</html>
